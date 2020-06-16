@@ -36,8 +36,7 @@ class Project(ConanFile):
 
     default_options = {
         "tests": False,
-        "examples": False,
-        "gtest:shared": False
+        "examples": False
     }
 
     scm = {
@@ -47,7 +46,7 @@ class Project(ConanFile):
         "submodule": "recursive"
     }
     
-    generators = "cmake_find_package"
+    generators = "cmake"
 
     def _configure_cmake(self):
         cmake = CMake(self, generator="Ninja")

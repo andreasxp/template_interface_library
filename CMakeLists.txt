@@ -5,6 +5,9 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake/install.cmake")
 include("${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake/static_analysis.cmake")
 include("${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake/warnings.cmake")
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 # Tooling
@@ -26,6 +29,8 @@ file(GLOB_RECURSE sources RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" CONFIGURE_D
 
 # Target
 add_library(${target_name} INTERFACE)
+add_library(${namespace}::${target_name} ALIAS ${target_name})
+
 foreach(source ${sources})
 	target_sources(${target_name} INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/${source}>)
 	target_sources(${target_name} INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/${source}>)
@@ -36,7 +41,8 @@ target_include_directories(${target_name}
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 		$<INSTALL_INTERFACE:include>
 )
-add_library(${namespace}::${target_name} ALIAS ${target_name})
+
+# target_link_libraries(${target_name} INTERFACE ...)
 
 # Installation
 install_targets(${target_name})
@@ -52,8 +58,6 @@ configure_and_install(${CMAKE_SCRIPTS_ROOT}/simple-config.cmake.in ${namespace} 
 if(${PROJECT_NAME}_BUILD_TESTS)
 	message(STATUS "Building ${PROJECT_NAME} tests")
 
-	find_package(doctest REQUIRED)
-
 	file(GLOB_RECURSE sources CONFIGURE_DEPENDS
 		"tests/*.cpp"
 	)
@@ -64,7 +68,7 @@ if(${PROJECT_NAME}_BUILD_TESTS)
 	target_link_libraries(${target_name}_tests
 		PRIVATE
 			${namespace}::${target_name}
-			doctest::doctest
+			CONAN_PKG::doctest
 	)
 endif()
 
